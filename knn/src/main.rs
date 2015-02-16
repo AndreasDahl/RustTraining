@@ -114,13 +114,13 @@ fn main() {
 
 #[test]
 fn test_distace() {
-    assert_eq!(5.0, distance(Point { x: 0, y: 0 }, Point { x: 3, y: 4 } ));
+    assert_eq!(5.0, distance(&Point { x: 0, y: 0 }, &Point { x: 3, y: 4 } ));
 }
 
 #[test]
 #[should_fail]
 fn test_distance_fail() {
-    assert_eq!(5.0, distance(Point { x: 0, y: 0 }, Point { x: 4, y: 4 } ));
+    assert_eq!(5.0, distance(&Point { x: 0, y: 0 }, &Point { x: 4, y: 4 } ));
 }
 
 #[test]
