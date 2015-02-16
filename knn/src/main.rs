@@ -83,14 +83,10 @@ fn knn(train: &[LabeledPoint], data: &[Point], k: u32) -> Vec<i32> {
                 }
             }
         }
-        match best_label {
-            Some(l) => labels.push(l),
-            None    => panic!(),
-        }
+        labels.push(best_label.expect("Label were not found"))
     }
 
     labels
-    // Box::new([LabeledPoint { point: Point { x: test[0].x, y: 0 }, label: 0 }])
 }
 
 fn main() {
