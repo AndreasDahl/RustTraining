@@ -1,6 +1,5 @@
 use std::num::Float; // TODO: probably deprecated
-use std::cmp::Ordering;
-use std::cmp::Ordering::{ Less, Greater, Equal };
+use std::cmp::Ordering::Greater;
 use std::collections::HashMap;
 
 struct Point {
