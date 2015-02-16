@@ -33,6 +33,28 @@ fn cmp( a: f32, b: f32 ) -> Ordering {
     else { Equal }
 }
 
+fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> &T {
+    let mut highest: Option<&T> = None;
+    for i in 0..vec.len() {
+        match highest {
+            None => highest = Some(&vec[i]),
+            Some(h)    => {
+                match (&vec[i]).partial_cmp(h) {
+                    Some(o) => match o {
+                        Greater => highest = Some(&vec[i]),
+                        _ => continue
+                    },
+                    None => continue
+                }
+            }
+        }
+    }
+    match highest {
+        Some(h) => h,
+        None => panic!()
+    }
+}
+
 // Current only one-nearest-neighbour
 fn knn(train: &[LabeledPoint], data: &[Point], k: u32) -> Vec<i32> {
     let mut labels = vec![];
@@ -100,3 +122,11 @@ fn test_distace() {
 fn test_distance_fail() {
     assert_eq!(5.0, distance(Point { x: 0, y: 0 }, Point { x: 4, y: 4 } ));
 }
+
+#[test]
+fn test_highest_in_vec() {
+    let v = vec![0.5, 1.0, 3.0, 2.0];
+    assert_eq!(3.0, *highest_in_vec(&v));
+    assert!(1.0 != *highest_in_vec(&v));
+}
+
