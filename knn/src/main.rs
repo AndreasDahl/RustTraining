@@ -33,15 +33,16 @@ fn cmp( a: f32, b: f32 ) -> Ordering {
     else { Equal }
 }
 
-fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> &T {
-    let mut highest: Option<&T> = None;
+fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> (&T, usize) {
+    let mut highest: Option<(&T, usize)> = None;
     for i in 0..vec.len() {
         match highest {
-            None => highest = Some(&vec[i]),
-            Some(h)    => {
+            None => highest = Some((&vec[i], i)),
+            Some(h_tuple)    => {
+                let (h, _) = h_tuple;
                 match (&vec[i]).partial_cmp(h) {
                     Some(o) => match o {
-                        Greater => highest = Some(&vec[i]),
+                        Greater => highest = Some((&vec[i], i)),
                         _ => continue
                     },
                     None => continue
@@ -50,7 +51,7 @@ fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> &T {
         }
     }
     match highest {
-        Some(h) => h,
+        Some(h_tuple) => h_tuple,
         None => panic!()
     }
 }
@@ -126,7 +127,9 @@ fn test_distance_fail() {
 #[test]
 fn test_highest_in_vec() {
     let v = vec![0.5, 1.0, 3.0, 2.0];
-    assert_eq!(3.0, *highest_in_vec(&v));
-    assert!(1.0 != *highest_in_vec(&v));
+    let (res_v, res_i) = highest_in_vec(&v); 
+    assert_eq!(3.0, *res_v);
+    assert_eq!(2, res_i);
+    assert!(1.0 != *res_v);
 }
 
