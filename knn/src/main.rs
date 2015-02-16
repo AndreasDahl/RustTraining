@@ -28,12 +28,6 @@ fn distance(p1: &Point, p2: &Point) -> f32 {
     fo.sqrt()
 }
 
-fn cmp( a: f32, b: f32 ) -> Ordering {
-    if a < b { Less }
-    else if a > b { Greater }
-    else { Equal }
-}
-
 fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
     let mut highest: Option<(&T, usize)> = None;
     for i in 0..vec.len() {
