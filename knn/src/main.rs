@@ -1,15 +1,16 @@
 use std::num::Float; // TODO: probably deprecated
 use std::cmp::Ordering;
 use std::cmp::Ordering::{ Less, Greater, Equal };
+use std::collections::HashMap;
 
 struct Point {
     x: i32,
     y: i32,
 }
 
-struct LabeledPoint {
+struct LabeledPoint<'a> {
     point: Point,
-    label: i32, // TODO: Generic
+    label: &'a str, // TODO: Generic
 }
 
 fn print_point(point: Point) {
@@ -33,7 +34,7 @@ fn cmp( a: f32, b: f32 ) -> Ordering {
     else { Equal }
 }
 
-fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> (&T, usize) {
+fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
     let mut highest: Option<(&T, usize)> = None;
     for i in 0..vec.len() {
         match highest {
@@ -50,61 +51,79 @@ fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> (&T, usize) {
             }
         }
     }
-    match highest {
-        Some(h_tuple) => h_tuple,
-        None => panic!()
+    highest
+}
+
+fn most_common<'a>(vec: &Vec<&'a str>) -> Option<&'a str> {
+    let mut hist: HashMap<&str, u32> = HashMap::new();
+
+    for e in vec.iter() {
+        match hist.get(e) {
+            Some(&n) => hist.insert(e, n + 1),
+            None    => hist.insert(e, 1)
+        };
+    };
+
+    let mut best = None;
+    for (k, v) in hist.iter() {
+        match best {
+            Some((_, bv)) => {
+                if v > bv {
+                    best = Some((k, v))
+                }},
+            None => best = Some((k, v))
+        };
+    };
+    
+    match best {
+        Some((k, _))  => Some(&k),
+        None        => None
     }
 }
 
-// Current only one-nearest-neighbour
-fn knn(train: &[LabeledPoint], data: &[Point], k: u32) -> Vec<i32> {
-    let mut labels = vec![];
+// Currently only one-nearest-neighbour
+fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
+    let mut ret = Vec::new();
     for dp in data {
-        let mut distances = vec![]; 
+        let mut distances = Vec::new();
+        let mut tmp_labels = Vec::new();
+        // Build vector of closest points
         for tp in train {
-            distances.push( (distance( dp, &tp.point ), tp.label ) )
-        }
-        let mut min_dist : Option<f32> = None;
-        let mut best_label : Option<i32> = None;
-        for (dist, l) in distances {
-            match min_dist {
-                Some(min_d) => {
-                    match cmp(min_d, dist) {
-                        Greater => {
-                            min_dist = Some(dist);
-                            best_label = Some(l);
-                        }
-                        _ => continue
-                    }
-                }
-                None        => {
-                    min_dist = Some(dist);
-                    best_label = Some(l);
-                }
+            let dist = distance( dp, &tp.point );
+            if distances.len() < k {
+                distances.push(dist);
+                tmp_labels.push(tp.label)
+            } else {
+                let (&v, i) = highest_in_vec(&distances).expect("This should not happen");
+                if v > dist { 
+                    distances[i] = dist;
+                    tmp_labels[i] = tp.label;
+                };
             }
         }
-        labels.push(best_label.expect("Label were not found"))
+        // Add best label to return vector
+        let best_label = most_common(&tmp_labels).expect("Label were not found");
+        println!("Best label: {}", best_label);
+        ret.push(best_label);
     }
-
-    labels
+    ret
 }
 
 fn main() {
     print_point( Point { x: 0, y: 0 } );
-    print_lpoint( LabeledPoint { point: Point { x: 0, y: 0 }, label: 0 } );
+    print_lpoint( LabeledPoint { point: Point { x: 0, y: 0 }, label: "0" } );
 
-    let train = [ LabeledPoint { point: Point { x: 0, y: 0 }, label: 0 },
-                  LabeledPoint { point: Point { x: 1, y: 1 }, label: 0 },
-                  LabeledPoint { point: Point { x: 3, y: -3 }, label: 1 } ];
+    let train = [ LabeledPoint { point: Point { x: 0, y: 0 }, label: "0" },
+                  LabeledPoint { point: Point { x: 1, y: 1 }, label: "0" },
+                  LabeledPoint { point: Point { x: 3, y: -3 }, label: "1" } ];
     let test = [ Point { x: 0, y: 0 },
                  Point { x: 3, y:-3 }];
-    let res = knn(&train, &test, 1);
+    let res = knn(&train, &test, 3);
 
+    println!("length: {}", res.len());
     for p in res {
         println!("res: {}", p);
     }
-
-    println!("Hello, world!");
 }
 
 // TESTS --------------------------------
@@ -123,7 +142,7 @@ fn test_distance_fail() {
 #[test]
 fn test_highest_in_vec() {
     let v = vec![0.5, 1.0, 3.0, 2.0];
-    let (res_v, res_i) = highest_in_vec(&v); 
+    let (res_v, res_i) = highest_in_vec(&v).expect("Error"); 
     assert_eq!(3.0, *res_v);
     assert_eq!(2, res_i);
     assert!(1.0 != *res_v);
