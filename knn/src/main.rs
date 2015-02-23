@@ -1,6 +1,8 @@
 use std::num::Float; // TODO: probably deprecated
 use std::cmp::Ordering::Greater;
 use std::collections::HashMap;
+use std::io::prelude::*;
+use std::fs::File;
 
 struct Point {
     x: i32,
@@ -102,7 +104,35 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
     ret
 }
 
+// TODO: better error handling.
+fn get_points(path: &str) -> Vec<Point> {
+    let mut f = File::open(path).ok().expect("Failed to open file");
+    let mut s = String::new();
+    let mut points = Vec::new();
+    
+    f.read_to_string(&mut s).ok().expect("Failed to read file to string");
+
+    let lines = s.trim().split_str("\n");
+    for line in lines {
+        println!("line: {}", line);
+        let tokens = line.trim().split_str(" ");
+        let mut values = Vec::new();
+        for t in tokens {
+            values.push(t);
+            println!("token: {}", t);
+        }
+        let x = values[0].parse().ok().expect("Badly formatted file");
+        let y = values[1].parse().ok().expect("Badly formatted file");
+//        let label = values[2];
+//        let p = LabeledPoint { point: Point { x: x, y: y }, label: label };
+        let p = Point { x: x, y: y };
+        points.push(p);
+    }
+    points
+}
+
 fn main() {
+    /*
     print_point( Point { x: 0, y: 0 } );
     print_lpoint( LabeledPoint { point: Point { x: 0, y: 0 }, label: "0" } );
 
@@ -116,6 +146,10 @@ fn main() {
     println!("length: {}", res.len());
     for p in res {
         println!("res: {}", p);
+    }*/
+    let pts = get_points("data.dt");
+    for p in pts {
+        print_point( p );
     }
 }
 
