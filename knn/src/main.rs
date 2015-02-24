@@ -5,8 +5,8 @@ use std::io::prelude::*;
 use std::fs::File;
 
 struct Point {
-    x: i32,
-    y: i32,
+    x: f32,
+    y: f32,
 }
 
 struct LabeledPoint {
@@ -105,7 +105,7 @@ fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<Box<String>> {
 }
 
 // TODO: better error handling.
-fn get_points(path: &str) -> Vec<LabeledPoint> {
+fn load_lpoints(path: &str) -> Vec<LabeledPoint> {
     let mut f = File::open(path).ok().expect("Failed to open file");
     let mut s = String::new();
     let mut points = Vec::new();
@@ -114,44 +114,50 @@ fn get_points(path: &str) -> Vec<LabeledPoint> {
 
     let lines = s.trim().split_str("\n");
     for line in lines {
-        println!("line: {}", line);
         let tokens = line.trim().split_str(" ");
         let mut values = Vec::new();
         for t in tokens {
-            values.push(t);
-            println!("token: {}", t);
+            values.push(t); // Collect?
         }
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
         let label = values[2];
         let p = LabeledPoint { point: Point { x: x, y: y }, label:
             String::from_str(label) };
-//        let p = Point { x: x, y: y };
+        points.push(p);
+    }
+    points
+}
+
+// TODO: better error handling.
+fn load_points(path: &str) -> Vec<Point> {
+    let mut f = File::open(path).ok().expect("Failed to open file");
+    let mut s = String::new();
+    let mut points = Vec::new();
+    
+    f.read_to_string(&mut s).ok().expect("Failed to read file to string");
+
+    let lines = s.trim().split_str("\n");
+    for line in lines {
+        let tokens = line.trim().split_str(" ");
+        let mut values = Vec::new();
+        for t in tokens { // collect?
+            values.push(t);
+        }
+        let x = values[0].parse().ok().expect("Badly formatted file");
+        let y = values[1].parse().ok().expect("Badly formatted file");
+        let p = Point { x: x, y: y };
         points.push(p);
     }
     points
 }
 
 fn main() {
-    /*
-    print_point( Point { x: 0, y: 0 } );
-    print_lpoint( LabeledPoint { point: Point { x: 0, y: 0 }, label: "0" } );
-
-    let train = [ LabeledPoint { point: Point { x: 0, y: 0 }, label: "0" },
-                  LabeledPoint { point: Point { x: 1, y: 1 }, label: "0" },
-                  LabeledPoint { point: Point { x: 3, y: -3 }, label: "1" } ];
-    let test = [ Point { x: 0, y: 0 },
-                 Point { x: 3, y:-3 }];
+    let train = load_lpoints("res/IrisTrain2014.dt");
+    let test = load_points("res/IrisTest2014.dt");
     let res = knn(&train, &test, 3);
 
     println!("length: {}", res.len());
-    for p in res {
-        println!("res: {}", p);
-    }*/
-    let pts = get_points("data.dt");
-    for p in pts {
-        print_lpoint( p );
-    }
 }
 
 // TESTS --------------------------------
