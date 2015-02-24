@@ -9,9 +9,9 @@ struct Point {
     y: i32,
 }
 
-struct LabeledPoint<'a> {
+struct LabeledPoint {
     point: Point,
-    label: &'a str, // TODO: Generic
+    label: String, // TODO: Generic
 }
 
 fn print_point(point: Point) {
@@ -49,18 +49,18 @@ fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
     highest
 }
 
-fn most_common<'a>(vec: &Vec<&'a str>) -> Option<&'a str> {
-    let mut counter: HashMap<&str, u32> = HashMap::new();
+fn most_common(vec: &Vec<String>) -> Option<Box<String>> {
+    let mut counter : HashMap<String, i32> = HashMap::new();
     // Build counter
-    for e in vec.iter() {
+    for e in vec {
         match counter.get(e) {
-            Some(&n) => counter.insert(e, n + 1),
-            None    => counter.insert(e, 1)
+            Some(&n) => counter.insert(e.clone(), n + 1),
+            None    => counter.insert(e.clone(), 1)
         };
     };
     // Find the key with the highest value
-    let mut best = None;
-    for (k, v) in counter.iter() {
+    let mut best : Option<(String, i32)> = None;
+    for (k, v) in counter {
         match best {
             Some((_, bv)) => {
                 if v > bv {
@@ -71,13 +71,13 @@ fn most_common<'a>(vec: &Vec<&'a str>) -> Option<&'a str> {
     };
     // Format return value
     match best {
-        Some((k, _))  => Some(&k),
+        Some((k, _))  => Some(Box::new(k)),
         None        => None
     }
 }
 
 // Currently only one-nearest-neighbour
-fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
+fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<Box<String>> {
     let mut ret = Vec::new();
     for dp in data {
         let mut distances = Vec::new();
@@ -87,12 +87,12 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
             let dist = distance( dp, &tp.point );
             if distances.len() < k {
                 distances.push(dist);
-                tmp_labels.push(tp.label)
+                tmp_labels.push(tp.label.clone())
             } else {
                 let (&v, i) = highest_in_vec(&distances).expect("This should not happen");
                 if v > dist { 
                     distances[i] = dist;
-                    tmp_labels[i] = tp.label;
+                    tmp_labels[i] = tp.label.clone();
                 };
             }
         }
@@ -105,7 +105,7 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
 }
 
 // TODO: better error handling.
-fn get_points(path: &str) -> Vec<Point> {
+fn get_points(path: &str) -> Vec<LabeledPoint> {
     let mut f = File::open(path).ok().expect("Failed to open file");
     let mut s = String::new();
     let mut points = Vec::new();
@@ -123,9 +123,10 @@ fn get_points(path: &str) -> Vec<Point> {
         }
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
-//        let label = values[2];
-//        let p = LabeledPoint { point: Point { x: x, y: y }, label: label };
-        let p = Point { x: x, y: y };
+        let label = values[2];
+        let p = LabeledPoint { point: Point { x: x, y: y }, label:
+            String::from_str(label) };
+//        let p = Point { x: x, y: y };
         points.push(p);
     }
     points
@@ -149,7 +150,7 @@ fn main() {
     }*/
     let pts = get_points("data.dt");
     for p in pts {
-        print_point( p );
+        print_lpoint( p );
     }
 }
 
