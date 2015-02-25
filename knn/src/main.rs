@@ -49,8 +49,8 @@ fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
     highest
 }
 
-fn most_common(vec: &Vec<String>) -> Option<String> {
-    let mut counter : HashMap<&String, i32> = HashMap::new();
+fn most_common<'a>(vec: &Vec<&'a str>) -> Option<&'a str> {
+    let mut counter : HashMap<&str, i32> = HashMap::new();
     // Build counter
     for e in vec {
         match counter.get(e) {
@@ -59,7 +59,7 @@ fn most_common(vec: &Vec<String>) -> Option<String> {
         };
     };
     // Find the key with the highest value
-    let mut best : Option<(&String, i32)> = None;
+    let mut best : Option<(&str, i32)> = None;
     for (k, v) in counter {
         match best {
             Some((_, bv)) => {
@@ -71,7 +71,7 @@ fn most_common(vec: &Vec<String>) -> Option<String> {
     };
     // Format return value
     match best {
-        Some((k, _))  => Some(k.clone()),
+        Some((k, _))  => Some(k),
         None        => None
     }
 }
@@ -81,25 +81,25 @@ fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
     let mut ret = Vec::new();
     for dp in data {
         let mut distances = Vec::new();
-        let mut tmp_labels = Vec::new();
+        let mut tmp_labels : Vec<&str> = Vec::new();
         // Build vector of closest points
         for tp in train {
             let dist = distance( dp, &tp.point );
             if distances.len() < k {
                 distances.push(dist);
-                tmp_labels.push(tp.label.clone())
+                tmp_labels.push(tp.label.as_slice())
             } else {
                 let (&v, i) = highest_in_vec(&distances).expect("This should not happen");
                 if v > dist { 
                     distances[i] = dist;
-                    tmp_labels[i] = tp.label.clone();
+                    tmp_labels[i] = tp.label.as_slice();
                 };
             }
         }
         // Add best label to return vector
         let best_label = most_common(&tmp_labels).expect("Label were not found");
         println!("Best label: {}", best_label);
-        ret.push(best_label);
+        ret.push(String::from_str(best_label));
     }
     ret
 }
@@ -182,3 +182,8 @@ fn test_highest_in_vec() {
     assert!(1.0 != *res_v);
 }
 
+#[test]
+fn test_most_common() {
+    let v = vec!["a", "b", "c", "a", "b", "a"];
+    assert_eq!("a", most_common(&v).expect("Error"));
+}
