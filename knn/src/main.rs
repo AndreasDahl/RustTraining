@@ -49,7 +49,7 @@ fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
     highest
 }
 
-fn most_common(vec: &Vec<String>) -> Option<Box<String>> {
+fn most_common(vec: &Vec<String>) -> Option<String> {
     let mut counter : HashMap<String, i32> = HashMap::new();
     // Build counter
     for e in vec {
@@ -71,13 +71,13 @@ fn most_common(vec: &Vec<String>) -> Option<Box<String>> {
     };
     // Format return value
     match best {
-        Some((k, _))  => Some(Box::new(k)),
+        Some((k, _))  => Some(k),
         None        => None
     }
 }
 
 // Currently only one-nearest-neighbour
-fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<Box<String>> {
+fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
     let mut ret = Vec::new();
     for dp in data {
         let mut distances = Vec::new();
@@ -116,8 +116,8 @@ fn load_lpoints(path: &str) -> Vec<LabeledPoint> {
     for line in lines {
         let tokens = line.trim().split_str(" ");
         let mut values = Vec::new();
-        for t in tokens {
-            values.push(t); // Collect?
+        for t in tokens { // collect?
+            values.push(t);
         }
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
@@ -164,13 +164,13 @@ fn main() {
 
 #[test]
 fn test_distace() {
-    assert_eq!(5.0, distance(&Point { x: 0, y: 0 }, &Point { x: 3, y: 4 } ));
+    assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 3.0, y: 4.0 } ));
 }
 
 #[test]
 #[should_fail]
 fn test_distance_fail() {
-    assert_eq!(5.0, distance(&Point { x: 0, y: 0 }, &Point { x: 4, y: 4 } ));
+    assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 4.0, y: 4.0 } ));
 }
 
 #[test]
