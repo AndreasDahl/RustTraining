@@ -50,16 +50,16 @@ fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
 }
 
 fn most_common(vec: &Vec<String>) -> Option<String> {
-    let mut counter : HashMap<String, i32> = HashMap::new();
+    let mut counter : HashMap<&String, i32> = HashMap::new();
     // Build counter
     for e in vec {
         match counter.get(e) {
-            Some(&n) => counter.insert(e.clone(), n + 1),
-            None    => counter.insert(e.clone(), 1)
+            Some(&n) => counter.insert(e, n + 1),
+            None    => counter.insert(e, 1)
         };
     };
     // Find the key with the highest value
-    let mut best : Option<(String, i32)> = None;
+    let mut best : Option<(&String, i32)> = None;
     for (k, v) in counter {
         match best {
             Some((_, bv)) => {
@@ -71,7 +71,7 @@ fn most_common(vec: &Vec<String>) -> Option<String> {
     };
     // Format return value
     match best {
-        Some((k, _))  => Some(k),
+        Some((k, _))  => Some(k.clone()),
         None        => None
     }
 }
