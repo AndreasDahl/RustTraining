@@ -98,7 +98,6 @@ fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
         }
         // Add best label to return vector
         let best_label = most_common(&tmp_labels).expect("Label were not found");
-        println!("Best label: {}", best_label);
         ret.push(String::from_str(best_label));
     }
     ret
@@ -158,32 +157,61 @@ fn main() {
     let res = knn(&train, &test, 3);
 
     println!("length: {}", res.len());
+    for label in res {
+        println!("Best label: {}", label);
+    }
 }
 
-// TESTS --------------------------------
+#[cfg(test)]
+mod tests {
+    extern crate test;
+    use self::test::Bencher;
+    use super::{Point, distance, highest_in_vec, most_common, knn, load_points,
+    load_lpoints};
 
-#[test]
-fn test_distace() {
-    assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 3.0, y: 4.0 } ));
+    #[test]
+    fn test_distace() {
+        assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 3.0, y: 4.0 } ));
+    }
+
+    #[test]
+    #[should_fail(expected = "assertion failed")]
+    fn test_distance_fail() {
+        assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 4.0, y: 4.0 } ));
+    }
+
+    #[test]
+    fn test_highest_in_vec() {
+        let v = vec![0.5, 1.0, 3.0, 2.0];
+        let (res_v, res_i) = highest_in_vec(&v).expect("Error");
+        assert_eq!(3.0, *res_v);
+        assert_eq!(2, res_i);                         
+        assert!(1.0 != *res_v);
+    }
+
+    #[test]
+    fn test_most_common() {
+        let v = vec!["a", "b", "c", "a", "b", "a"];
+        assert_eq!("a", most_common(&v).expect("Error"));
+    }
+
+    #[bench]
+    fn bench_highest_in_vec(b: &mut Bencher) {
+        let v = vec![0.5, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0];
+        b.iter(|| {highest_in_vec(&v)})
+    }
+
+    #[bench]
+    fn bench_most_common(b: &mut Bencher) {
+        let v = vec!["a", "b", "c", "a", "b", "a"];
+        b.iter(|| {most_common(&v)});
+    }
+
+    #[bench]
+    fn bench_knn(b: &mut Bencher) {
+        let train = load_lpoints("res/IrisTrain2014.dt");
+        let test = load_points("res/IrisTest2014.dt");
+        b.iter(|| {knn(&train, &test, 3)});
+    }
 }
 
-#[test]
-#[should_fail]
-fn test_distance_fail() {
-    assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 4.0, y: 4.0 } ));
-}
-
-#[test]
-fn test_highest_in_vec() {
-    let v = vec![0.5, 1.0, 3.0, 2.0];
-    let (res_v, res_i) = highest_in_vec(&v).expect("Error"); 
-    assert_eq!(3.0, *res_v);
-    assert_eq!(2, res_i);
-    assert!(1.0 != *res_v);
-}
-
-#[test]
-fn test_most_common() {
-    let v = vec!["a", "b", "c", "a", "b", "a"];
-    assert_eq!("a", most_common(&v).expect("Error"));
-}
