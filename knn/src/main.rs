@@ -114,10 +114,7 @@ fn load_lpoints(path: &str) -> Vec<LabeledPoint> {
     let lines = s.trim().split_str("\n");
     for line in lines {
         let tokens = line.trim().split_str(" ");
-        let mut values = Vec::new();
-        for t in tokens { // collect?
-            values.push(t);
-        }
+        let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
         let label = values[2];
@@ -139,10 +136,7 @@ fn load_points(path: &str) -> Vec<Point> {
     let lines = s.trim().split_str("\n");
     for line in lines {
         let tokens = line.trim().split_str(" ");
-        let mut values = Vec::new();
-        for t in tokens { // collect?
-            values.push(t);
-        }
+        let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
         let p = Point { x: x, y: y };
@@ -159,7 +153,7 @@ fn main() {
     println!("length: {}", res.len());
     for label in res {
         println!("Best label: {}", label);
-    }
+    } 
 }
 
 #[cfg(test)]
@@ -197,7 +191,7 @@ mod tests {
 
     #[bench]
     fn bench_highest_in_vec(b: &mut Bencher) {
-        let v = vec![0.5, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0];
+        let v = vec![0.5, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0];
         b.iter(|| {highest_in_vec(&v)})
     }
 
