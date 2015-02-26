@@ -1,4 +1,4 @@
-use std::num::Float; // TODO: probably deprecated
+use std::num::Float;
 use std::cmp::Ordering::Greater;
 use std::collections::HashMap;
 use std::io::prelude::*;
@@ -29,7 +29,7 @@ fn distance(p1: &Point, p2: &Point) -> f32 {
     fo.sqrt()
 }
 
-fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
+fn highest_in_vec<T: PartialOrd>(vec: &[T]) -> Option<(&T, usize)> {
     let mut highest: Option<(&T, usize)> = None;
     for i in 0..vec.len() {
         match highest {
@@ -49,7 +49,7 @@ fn highest_in_vec<T: PartialOrd>(vec: &Vec<T>) -> Option<(&T, usize)> {
     highest
 }
 
-fn most_common<'a>(vec: &Vec<&'a str>) -> Option<&'a str> {
+fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
     let mut counter : HashMap<&str, i32> = HashMap::new();
     // Build counter
     for e in vec {
