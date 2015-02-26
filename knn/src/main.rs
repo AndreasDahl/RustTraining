@@ -61,13 +61,11 @@ fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
     // Find the key with the highest value
     let mut best : Option<(&str, i32)> = None;
     for (k, v) in counter {
-        match best {
-            Some((_, bv)) => {
-                if v > bv {
-                    best = Some((k, v))
-                }},
-            None => best = Some((k, v))
-        };
+        best = match best {
+            Some((_, bv)) if v > bv => Some((k, v)),
+            None => Some((k, v)),
+            _ => best,
+        }
     };
     // Format return value
     match best {
