@@ -1,3 +1,8 @@
+#![feature(core)]
+#![feature(io)]
+#![feature(fs)]
+#![feature(collections)]
+
 use std::num::Float;
 use std::cmp::Ordering::Greater;
 use std::collections::HashMap;
