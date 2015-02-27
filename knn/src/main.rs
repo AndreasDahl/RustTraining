@@ -108,9 +108,9 @@ fn load_lpoints(path: &str) -> Result<Vec<LabeledPoint>, std::io::Error> {
     
     try!(f.read_to_string(&mut s));
 
-    let lines = s.trim().split_str("\n");
+    let lines = s.trim().split("\n");
     for line in lines {
-        let tokens = line.trim().split_str(" ");
+        let tokens = line.trim().split(" ");
         let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
@@ -130,9 +130,9 @@ fn load_points(path: &str) -> Result<Vec<Point>, std::io::Error> {
     
     try!(f.read_to_string(&mut s));
 
-    let lines = s.trim().split_str("\n");
+    let lines = s.trim().split("\n");
     for line in lines {
-        let tokens = line.trim().split_str(" ");
+        let tokens = line.trim().split(" ");
         let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
