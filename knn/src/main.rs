@@ -74,7 +74,6 @@ fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
     }
 }
 
-// Currently only one-nearest-neighbour
 fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
     let mut ret = Vec::new();
     for dp in data {
@@ -101,13 +100,13 @@ fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
     ret
 }
 
-// TODO: better error handling.
-fn load_lpoints(path: &str) -> Vec<LabeledPoint> {
-    let mut f = File::open(path).ok().expect("Failed to open file");
+// TODO: Handle Parsing Error.
+fn load_lpoints(path: &str) -> Result<Vec<LabeledPoint>, std::io::Error> {
+    let mut f = try!(File::open(path));
     let mut s = String::new();
     let mut points = Vec::new();
     
-    f.read_to_string(&mut s).ok().expect("Failed to read file to string");
+    try!(f.read_to_string(&mut s));
 
     let lines = s.trim().split_str("\n");
     for line in lines {
@@ -120,16 +119,16 @@ fn load_lpoints(path: &str) -> Vec<LabeledPoint> {
             String::from_str(label) };
         points.push(p);
     }
-    points
+    Ok(points)
 }
 
-// TODO: better error handling.
-fn load_points(path: &str) -> Vec<Point> {
-    let mut f = File::open(path).ok().expect("Failed to open file");
+// TODO: Handle Parsing Error.
+fn load_points(path: &str) -> Result<Vec<Point>, std::io::Error> {
+    let mut f = try!(File::open(path));
     let mut s = String::new();
     let mut points = Vec::new();
     
-    f.read_to_string(&mut s).ok().expect("Failed to read file to string");
+    try!(f.read_to_string(&mut s));
 
     let lines = s.trim().split_str("\n");
     for line in lines {
@@ -140,12 +139,14 @@ fn load_points(path: &str) -> Vec<Point> {
         let p = Point { x: x, y: y };
         points.push(p);
     }
-    points
+    Ok(points)
 }
 
 fn main() {
-    let train = load_lpoints("res/IrisTrain2014.dt");
-    let test = load_points("res/IrisTest2014.dt");
+    let train = load_lpoints("res/IrisTrain2014.dt")
+        .ok().expect("Error Loading training data");
+    let test = load_points("res/IrisTest2014.dt")
+        .ok().expect("Error Loading test data");
     let res = knn(&train, &test, 3);
 
     println!("length: {}", res.len());
@@ -201,8 +202,10 @@ mod tests {
 
     #[bench]
     fn bench_knn(b: &mut Bencher) {
-        let train = load_lpoints("res/IrisTrain2014.dt");
-        let test = load_points("res/IrisTest2014.dt");
+        let train = load_lpoints("res/IrisTrain2014.dt")
+            .ok().expect("Error Loading training data");
+        let test = load_points("res/IrisTest2014.dt")
+            .ok().expect("Error Loading test data");
         b.iter(|| {knn(&train, &test, 3)});
     }
 }
