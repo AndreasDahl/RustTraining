@@ -82,6 +82,7 @@ fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
 }
 
 fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
+fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
     let mut ret = Vec::new();
     for dp in data {
         let mut distances = Vec::new();
@@ -102,7 +103,7 @@ fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
         }
         // Add best label to return vector
         let best_label = most_common(&tmp_labels).expect("Label were not found");
-        ret.push(String::from_str(best_label));
+        ret.push(best_label);
     }
     ret
 }
