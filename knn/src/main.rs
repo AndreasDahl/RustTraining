@@ -7,6 +7,8 @@ use std::num::Float;
 use std::cmp::Ordering::Greater;
 use std::collections::HashMap;
 use std::io::prelude::*;
+use std::io;
+use std::io::BufReader;
 use std::fs::File;
 
 struct Point {
@@ -106,35 +108,32 @@ fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
 }
 
 // TODO: Handle Parsing Error.
-fn load_lpoints(path: &str) -> Result<Vec<LabeledPoint>, std::io::Error> {
-    let mut f = try!(File::open(path));
+fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
     let mut s = String::new();
     let mut points = Vec::new();
-    
-    try!(f.read_to_string(&mut s));
+    let mut br = BufReader::new(try!(File::open(path)));
 
+    br.read_to_string(&mut s);
     let lines = s.trim().split("\n");
     for line in lines {
         let tokens = line.trim().split(" ");
         let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
-        let label = values[2];
-        let p = LabeledPoint { point: Point { x: x, y: y }, label:
-            String::from_str(label) };
+        let label = String::from_str(values[2]);
+        let p = LabeledPoint { point : Point {x: x, y: y}, label: label };
         points.push(p);
     }
     Ok(points)
 }
 
 // TODO: Handle Parsing Error.
-fn load_points(path: &str) -> Result<Vec<Point>, std::io::Error> {
-    let mut f = try!(File::open(path));
+fn load_points(path: &str) -> io::Result<Vec<Point>> {
     let mut s = String::new();
     let mut points = Vec::new();
-    
-    try!(f.read_to_string(&mut s));
+    let mut br = BufReader::new(try!(File::open(path)));
 
+    br.read_to_string(&mut s);
     let lines = s.trim().split("\n");
     for line in lines {
         let tokens = line.trim().split(" ");
@@ -193,6 +192,8 @@ mod tests {
         assert_eq!("a", most_common(&v).expect("Error"));
     }
 
+    // Benchmarks
+
     #[bench]
     fn bench_highest_in_vec(b: &mut Bencher) {
         let v = vec![0.5, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0];
@@ -205,6 +206,15 @@ mod tests {
         b.iter(|| {most_common(&v)});
     }
 
+    #[bench]
+    fn bench_load_points(b: &mut Bencher) {
+         b.iter(|| {load_points("res/IrisTrain2014.dt")});
+    }
+
+    #[bench]
+    fn bench_load_lpoints(b: &mut Bencher) {
+         b.iter(|| {load_lpoints("res/IrisTrain2014.dt")});
+    }
     #[bench]
     fn bench_knn(b: &mut Bencher) {
         let train = load_lpoints("res/IrisTrain2014.dt")
