@@ -10,10 +10,18 @@ use std::io::prelude::*;
 use std::io;
 use std::io::BufReader;
 use std::fs::File;
+use std::fmt;
 
+#[derive(Clone, PartialEq, Debug)]
 struct Point {
     x: f32,
     y: f32,
+}
+
+impl fmt::Display for Point {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
 }
 
 struct LabeledPoint {
@@ -81,7 +89,63 @@ fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
     }
 }
 
-fn knn(train: &[LabeledPoint], data: &[Point], k: usize) -> Vec<String> {
+fn mean_point(data: &[&Point]) -> Point {
+    let mut sum_x = 0.0;
+    let mut sum_y = 0.0;
+    for point in data {
+        sum_x += point.x;
+        sum_y += point.y;
+    }
+    Point { x: sum_x / data.len() as f32, y: sum_y / data.len() as f32 }
+}
+
+fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
+    // Pick initial centroids
+    let mut cent : Vec<Point> = Vec::new();
+    for i in 0..k {
+        cent.push(data[i].clone());
+    }
+    // Initialize old_clusters
+    let mut old_clusters : Vec<Vec<&Point>> = Vec::with_capacity(k);
+    for _ in 0..k {
+        old_clusters.push(Vec::new());
+    }
+    loop {
+        // Initialize new_clusters
+        let mut new_clusters : Vec<Vec<&Point>> = Vec::with_capacity(k);
+        for _ in 0..k {
+            new_clusters.push(Vec::new());
+        }
+        println!("Iteration");
+        // Find best labels based on current centroids
+        for p in data {
+            let mut best_dist = std::f32::INFINITY;
+            let mut best_label = 0;
+            for i in 0..cent.len() {
+                let tmp_dist = distance(p, &cent[i]);
+                if tmp_dist < best_dist {
+                    best_dist = tmp_dist;
+                    best_label = i;
+                }
+            }
+            new_clusters[best_label].push(p);
+        }
+        // Terminate of clusters are the same
+        if old_clusters == new_clusters {
+            return old_clusters;
+        }
+
+        // Otherwise prepare for next iteration
+        old_clusters = new_clusters;
+        
+        // Calculate new centroids by finding the mean of each cluster.
+        for i in 0..old_clusters.len() {
+            cent[i] = mean_point(&old_clusters[i]);
+        }
+    }
+}
+
+
 fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
     let mut ret = Vec::new();
     for dp in data {
@@ -154,10 +218,21 @@ fn main() {
         .ok().expect("Error Loading test data");
     let res = knn(&train, &test, 3);
 
+    /*
     println!("length: {}", res.len());
     for label in res {
         println!("Best label: {}", label);
-    } 
+    }
+    */
+
+    let res2 = kmeans(&test, 3);
+    println!("length: {}", res2.len());
+    for c in 0..res2.len() {
+        println!("Cluster: {}", c);
+        for point in &res2[c] {
+            println!("Point: {}", point); 
+        }
+    }
 }
 
 #[cfg(test)]
