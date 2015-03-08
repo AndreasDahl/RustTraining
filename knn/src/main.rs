@@ -29,12 +29,10 @@ struct LabeledPoint {
     label: String, // TODO: Generic
 }
 
-fn print_point(point: Point) {
-    println!("({}, {})", point.x, point.y);
-}
-
-fn print_lpoint(lpoint: LabeledPoint) {
-    println!("({}, {}): {}", lpoint.point.x, lpoint.point.y, lpoint.label);
+impl fmt::Display for LabeledPoint {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}: {}", self.point, self.label)
+    }
 }
 
 fn distance(p1: &Point, p2: &Point) -> f32 {
