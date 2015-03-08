@@ -238,7 +238,7 @@ mod tests {
     extern crate test;
     use self::test::Bencher;
     use super::{Point, distance, highest_in_vec, most_common, knn, load_points,
-    load_lpoints};
+    load_lpoints, kmeans};
 
     #[test]
     fn test_distace() {
@@ -296,6 +296,13 @@ mod tests {
         let test = load_points("res/IrisTest2014.dt")
             .ok().expect("Error Loading test data");
         b.iter(|| {knn(&train, &test, 3)});
+    }
+
+    #[bench]
+    fn bench_kmeans(b: &mut Bencher) {
+        let test = load_points("res/IrisTest2014.dt")
+            .ok().expect("Error Loading test data");
+        b.iter(|| {kmeans(&test, 3)});
     }
 }
 
