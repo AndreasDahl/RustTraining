@@ -178,7 +178,7 @@ fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
     let mut points = Vec::new();
     let mut br = BufReader::new(try!(File::open(path)));
 
-    br.read_to_string(&mut s);
+    try!(br.read_to_string(&mut s));
     let lines = s.trim().split("\n");
     for line in lines {
         let tokens = line.trim().split(" ");
@@ -198,7 +198,7 @@ fn load_points(path: &str) -> io::Result<Vec<Point>> {
     let mut points = Vec::new();
     let mut br = BufReader::new(try!(File::open(path)));
 
-    br.read_to_string(&mut s);
+    try!(br.read_to_string(&mut s));
     let lines = s.trim().split("\n");
     for line in lines {
         let tokens = line.trim().split(" ");
