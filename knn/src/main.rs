@@ -114,7 +114,6 @@ fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
         for _ in 0..k {
             new_clusters.push(Vec::new());
         }
-        println!("Iteration");
         // Find best labels based on current centroids
         for p in data {
             let mut best_dist = std::f32::INFINITY;
@@ -216,12 +215,10 @@ fn main() {
         .ok().expect("Error Loading test data");
     let res = knn(&train, &test, 3);
 
-    /*
     println!("length: {}", res.len());
     for label in res {
         println!("Best label: {}", label);
     }
-    */
 
     let res2 = kmeans(&test, 3);
     println!("length: {}", res2.len());
