@@ -42,6 +42,16 @@ fn distance(p1: &Point, p2: &Point) -> f32 {
     fo.sqrt()
 }
 
+fn zero_one_error<T: PartialEq>(expected : &[T], actual : &[T]) -> f32 {
+    let mut misses = 0;
+    for i in 0..expected.len() {
+        if (expected[i] != actual[i]) {
+            misses += 1
+        }
+    }
+    misses as f32 / expected.len() as f32
+}
+
 fn highest_in_vec<T: PartialOrd>(vec: &[T]) -> Option<(&T, usize)> {
     let mut highest: Option<(&T, usize)> = None;
     for i in 0..vec.len() {
@@ -235,7 +245,7 @@ mod tests {
     extern crate test;
     use self::test::Bencher;
     use super::{Point, distance, highest_in_vec, most_common, knn, load_points,
-    load_lpoints, kmeans};
+    load_lpoints, kmeans, zero_one_error};
 
     #[test]
     fn test_distace() {
@@ -261,6 +271,14 @@ mod tests {
     fn test_most_common() {
         let v = vec!["a", "b", "c", "a", "b", "a"];
         assert_eq!("a", most_common(&v).expect("Error"));
+    }
+
+    #[test]
+    fn test_zero_one_error() {
+        let expected = vec!["a", "a", "b", "b", "c"];
+        let actual   = vec!["a", "b", "b", "b", "c"];
+
+        assert_eq!(0.2, zero_one_error(&expected, &actual));
     }
 
     // Benchmarks
