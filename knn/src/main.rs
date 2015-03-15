@@ -12,6 +12,10 @@ use std::io::BufReader;
 use std::fs::File;
 use std::fmt;
 
+trait HasDistance {
+    fn distance(&self, &Self) -> f32;
+}
+
 #[derive(Clone, PartialEq, Debug)]
 struct Point {
     x: f32,
@@ -21,6 +25,15 @@ struct Point {
 impl fmt::Display for Point {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {})", self.x, self.y)
+    }
+}
+
+impl HasDistance for Point {
+    fn distance(&self, other : &Point) -> f32 {
+        let dx = other.x - self.x;
+        let dy = other.y - self.y;
+        let fo = (dx * dx + dy * dy) as f32;
+        fo.sqrt()
     }
 }
 
@@ -35,11 +48,10 @@ impl fmt::Display for LabeledPoint {
     }
 }
 
-fn distance(p1: &Point, p2: &Point) -> f32 {
-    let dx = p2.x - p1.x;
-    let dy = p2.y - p1.y;
-    let fo = (dx * dx + dy * dy) as f32;
-    fo.sqrt()
+impl HasDistance for LabeledPoint {
+    fn distance(&self, other : &LabeledPoint) -> f32 {
+        self.point.distance(&other.point)
+    }
 }
 
 fn zero_one_error<T: PartialEq>(expected : &[T], actual : &[T]) -> f32 {
@@ -129,7 +141,7 @@ fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
             let mut best_dist = std::f32::INFINITY;
             let mut best_label = 0;
             for i in 0..cent.len() {
-                let tmp_dist = distance(p, &cent[i]);
+                let tmp_dist = p.distance(&cent[i]);
                 if tmp_dist < best_dist {
                     best_dist = tmp_dist;
                     best_label = i;
@@ -152,7 +164,6 @@ fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
     }
 }
 
-
 fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
     let mut ret = Vec::new();
     for dp in data {
@@ -160,7 +171,7 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
         let mut tmp_labels : Vec<&str> = Vec::new();
         // Build vector of closest points
         for tp in train {
-            let dist = distance( dp, &tp.point );
+            let dist = dp.distance(&tp.point);
             if distances.len() < k {
                 distances.push(dist);
                 tmp_labels.push(tp.label.as_slice())
@@ -244,18 +255,25 @@ fn main() {
 mod tests {
     extern crate test;
     use self::test::Bencher;
-    use super::{Point, distance, highest_in_vec, most_common, knn, load_points,
-    load_lpoints, kmeans, zero_one_error};
+
+    use super::{Point, highest_in_vec, most_common, knn, load_points,
+    load_lpoints, kmeans, zero_one_error, HasDistance};
 
     #[test]
     fn test_distace() {
-        assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 3.0, y: 4.0 } ));
+        let p1 = Point { x: 0.0, y: 0.0 };
+        let p2 = Point { x: 3.0, y: 4.0 }; 
+        assert_eq!(5.0, p1.distance(&p2));
+        assert_eq!(5.0, p2.distance(&p1));
     }
 
     #[test]
     #[should_fail(expected = "assertion failed")]
     fn test_distance_fail() {
-        assert_eq!(5.0, distance(&Point { x: 0.0, y: 0.0 }, &Point { x: 4.0, y: 4.0 } ));
+        let p1 = Point { x: 0.0, y: 0.0 };
+        let p2 = Point { x: 4.0, y: 4.0 };
+        assert_eq!(5.0, p1.distance(&p2));
+        assert_eq!(5.0, p2.distance(&p1));
     }
 
     #[test]
