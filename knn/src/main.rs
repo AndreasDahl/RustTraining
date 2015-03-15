@@ -1,7 +1,7 @@
 #![feature(core)]
 #![feature(io)]
-#![feature(fs)]
 #![feature(collections)]
+#![cfg_attr(test, feature(test))]
 
 use std::num::Float;
 use std::cmp::Ordering::Greater;
@@ -45,7 +45,7 @@ fn distance(p1: &Point, p2: &Point) -> f32 {
 fn zero_one_error<T: PartialEq>(expected : &[T], actual : &[T]) -> f32 {
     let mut misses = 0;
     for i in 0..expected.len() {
-        if (expected[i] != actual[i]) {
+        if expected[i] != actual[i] {
             misses += 1
         }
     }
@@ -304,6 +304,7 @@ mod tests {
     fn bench_load_lpoints(b: &mut Bencher) {
          b.iter(|| {load_lpoints("res/IrisTrain2014.dt")});
     }
+    
     #[bench]
     fn bench_knn(b: &mut Bencher) {
         let train = load_lpoints("res/IrisTrain2014.dt")
