@@ -192,13 +192,11 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
 
 // TODO: Handle Parsing Error.
 fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
-    let mut s = String::new();
     let mut points = Vec::new();
-    let mut br = BufReader::new(try!(File::open(path)));
+    let br = BufReader::new(try!(File::open(path)));
 
-    try!(br.read_to_string(&mut s));
-    let lines = s.trim().split("\n");
-    for line in lines {
+    for line_result in br.lines() {
+        let line = try!(line_result);
         let tokens = line.trim().split(" ");
         let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
@@ -212,13 +210,11 @@ fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
 
 // TODO: Handle Parsing Error.
 fn load_points(path: &str) -> io::Result<Vec<Point>> {
-    let mut s = String::new();
     let mut points = Vec::new();
-    let mut br = BufReader::new(try!(File::open(path)));
+    let br = BufReader::new(try!(File::open(path)));
 
-    try!(br.read_to_string(&mut s));
-    let lines = s.trim().split("\n");
-    for line in lines {
+    for line_result in br.lines() {
+        let line = try!(line_result);
         let tokens = line.trim().split(" ");
         let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
