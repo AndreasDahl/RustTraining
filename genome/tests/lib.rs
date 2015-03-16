@@ -2,7 +2,7 @@
 
 extern crate genome;
 
-use genome::clustering::simple::seq_clust;
+use genome::clustering::seq_clust;
 use std::io;
 
 #[test]
