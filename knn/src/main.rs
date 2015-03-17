@@ -1,5 +1,4 @@
 #![feature(core)]
-#![feature(io)]
 #![feature(collections)]
 #![cfg_attr(test, feature(test))]
 
