@@ -1,8 +1,6 @@
-#![feature(core)]
-#![feature(collections)]
 #![cfg_attr(test, feature(test))]
 
-use std::num::Float;
+
 use std::cmp::Ordering::Greater;
 use std::collections::HashMap;
 use std::io::prelude::*;
@@ -173,12 +171,12 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
             let dist = dp.distance(&tp.point);
             if distances.len() < k {
                 distances.push(dist);
-                tmp_labels.push(tp.label.as_slice())
+                tmp_labels.push(&*tp.label)
             } else {
                 let (&v, i) = highest_in_vec(&distances).expect("This should not happen");
                 if v > dist { 
                     distances[i] = dist;
-                    tmp_labels[i] = tp.label.as_slice();
+                    tmp_labels[i] = &*tp.label;
                 };
             }
         }
@@ -200,7 +198,7 @@ fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
         let values : Vec<&str> = tokens.collect();
         let x = values[0].parse().ok().expect("Badly formatted file");
         let y = values[1].parse().ok().expect("Badly formatted file");
-        let label = String::from_str(values[2]);
+        let label = values[2].to_string();
         let p = LabeledPoint { point : Point {x: x, y: y}, label: label };
         points.push(p);
     }
@@ -263,7 +261,7 @@ mod tests {
     }
 
     #[test]
-    #[should_fail(expected = "assertion failed")]
+    #[should_panic(expected = "assertion failed")]
     fn test_distance_fail() {
         let p1 = Point { x: 0.0, y: 0.0 };
         let p2 = Point { x: 4.0, y: 4.0 };
