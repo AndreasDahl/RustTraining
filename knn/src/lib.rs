@@ -1,6 +1,3 @@
-#![cfg_attr(test, feature(test))]
-
-
 use std::cmp::Ordering::Greater;
 use std::collections::HashMap;
 use std::io::prelude::*;
@@ -9,14 +6,14 @@ use std::io::BufReader;
 use std::fs::File;
 use std::fmt;
 
-trait HasDistance {
+pub trait HasDistance {
     fn distance(&self, &Self) -> f32;
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct Point {
-    x: f32,
-    y: f32,
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
 }
 
 impl fmt::Display for Point {
@@ -34,7 +31,7 @@ impl HasDistance for Point {
     }
 }
 
-struct LabeledPoint {
+pub struct LabeledPoint {
     point: Point,
     label: String, // TODO: Generic
 }
@@ -51,7 +48,7 @@ impl HasDistance for LabeledPoint {
     }
 }
 
-fn zero_one_error<T: PartialEq>(expected : &[T], actual : &[T]) -> f32 {
+pub fn zero_one_error<T: PartialEq>(expected : &[T], actual : &[T]) -> f32 {
     let mut misses = 0;
     for i in 0..expected.len() {
         if expected[i] != actual[i] {
@@ -61,7 +58,7 @@ fn zero_one_error<T: PartialEq>(expected : &[T], actual : &[T]) -> f32 {
     misses as f32 / expected.len() as f32
 }
 
-fn highest_in_vec<T: PartialOrd>(vec: &[T]) -> Option<(&T, usize)> {
+pub fn highest_in_vec<T: PartialOrd>(vec: &[T]) -> Option<(&T, usize)> {
     let mut highest: Option<(&T, usize)> = None;
     for i in 0..vec.len() {
         match highest {
@@ -81,7 +78,7 @@ fn highest_in_vec<T: PartialOrd>(vec: &[T]) -> Option<(&T, usize)> {
     highest
 }
 
-fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
+pub fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
     let mut counter : HashMap<&str, i32> = HashMap::new();
     // Build counter
     for e in vec {
@@ -106,7 +103,7 @@ fn most_common<'a>(vec: &[&'a str]) -> Option<&'a str> {
     }
 }
 
-fn mean_point(data: &[&Point]) -> Point {
+pub fn mean_point(data: &[&Point]) -> Point {
     let mut sum_x = 0.0;
     let mut sum_y = 0.0;
     for point in data {
@@ -116,7 +113,7 @@ fn mean_point(data: &[&Point]) -> Point {
     Point { x: sum_x / data.len() as f32, y: sum_y / data.len() as f32 }
 }
 
-fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
+pub fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
     // Pick initial centroids
     let mut cent : Vec<Point> = Vec::new();
     for i in 0..k {
@@ -153,7 +150,7 @@ fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
 
         // Otherwise prepare for next iteration
         old_clusters = new_clusters;
-        
+
         // Calculate new centroids by finding the mean of each cluster.
         for i in 0..old_clusters.len() {
             cent[i] = mean_point(&old_clusters[i]);
@@ -161,7 +158,7 @@ fn kmeans(data: &[Point], k: usize) -> Vec<Vec<&Point>> {
     }
 }
 
-fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
+pub fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
     let mut ret = Vec::new();
     for dp in data {
         let mut distances = Vec::new();
@@ -174,7 +171,7 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
                 tmp_labels.push(&*tp.label)
             } else {
                 let (&v, i) = highest_in_vec(&distances).expect("This should not happen");
-                if v > dist { 
+                if v > dist {
                     distances[i] = dist;
                     tmp_labels[i] = &*tp.label;
                 };
@@ -188,7 +185,7 @@ fn knn<'a>(train: &'a[LabeledPoint], data: &[Point], k: usize) -> Vec<&'a str> {
 }
 
 // TODO: Handle Parsing Error.
-fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
+pub fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
     let mut points = Vec::new();
     let br = BufReader::new(try!(File::open(path)));
 
@@ -206,7 +203,7 @@ fn load_lpoints(path: &str) -> io::Result<Vec<LabeledPoint>> {
 }
 
 // TODO: Handle Parsing Error.
-fn load_points(path: &str) -> io::Result<Vec<Point>> {
+pub fn load_points(path: &str) -> io::Result<Vec<Point>> {
     let mut points = Vec::new();
     let br = BufReader::new(try!(File::open(path)));
 
@@ -222,7 +219,7 @@ fn load_points(path: &str) -> io::Result<Vec<Point>> {
     Ok(points)
 }
 
-fn main() {
+pub fn main() {
     let train = load_lpoints("res/IrisTrain2014.dt")
         .ok().expect("Error Loading training data");
     let test = load_points("res/IrisTest2014.dt")
@@ -239,97 +236,7 @@ fn main() {
     for c in 0..res2.len() {
         println!("Cluster: {}", c);
         for point in &res2[c] {
-            println!("Point: {}", point); 
+            println!("Point: {}", point);
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    extern crate test;
-    use self::test::Bencher;
-
-    use super::{Point, highest_in_vec, most_common, knn, load_points,
-    load_lpoints, kmeans, zero_one_error, HasDistance};
-
-    #[test]
-    fn test_distace() {
-        let p1 = Point { x: 0.0, y: 0.0 };
-        let p2 = Point { x: 3.0, y: 4.0 }; 
-        assert_eq!(5.0, p1.distance(&p2));
-        assert_eq!(5.0, p2.distance(&p1));
-    }
-
-    #[test]
-    #[should_panic(expected = "assertion failed")]
-    fn test_distance_fail() {
-        let p1 = Point { x: 0.0, y: 0.0 };
-        let p2 = Point { x: 4.0, y: 4.0 };
-        assert_eq!(5.0, p1.distance(&p2));
-        assert_eq!(5.0, p2.distance(&p1));
-    }
-
-    #[test]
-    fn test_highest_in_vec() {
-        let v = vec![0.5, 1.0, 3.0, 2.0];
-        let (res_v, res_i) = highest_in_vec(&v).expect("Error");
-        assert_eq!(3.0, *res_v);
-        assert_eq!(2, res_i);                         
-        assert!(1.0 != *res_v);
-    }
-
-    #[test]
-    fn test_most_common() {
-        let v = vec!["a", "b", "c", "a", "b", "a"];
-        assert_eq!("a", most_common(&v).expect("Error"));
-    }
-
-    #[test]
-    fn test_zero_one_error() {
-        let expected = vec!["a", "a", "b", "b", "c"];
-        let actual   = vec!["a", "b", "b", "b", "c"];
-
-        assert_eq!(0.2, zero_one_error(&expected, &actual));
-    }
-
-    // Benchmarks
-
-    #[bench]
-    fn bench_highest_in_vec(b: &mut Bencher) {
-        let v = vec![0.5, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0];
-        b.iter(|| {highest_in_vec(&v)})
-    }
-
-    #[bench]
-    fn bench_most_common(b: &mut Bencher) {
-        let v = vec!["a", "b", "c", "a", "b", "a"];
-        b.iter(|| {most_common(&v)});
-    }
-
-    #[bench]
-    fn bench_load_points(b: &mut Bencher) {
-         b.iter(|| {load_points("res/IrisTrain2014.dt")});
-    }
-
-    #[bench]
-    fn bench_load_lpoints(b: &mut Bencher) {
-         b.iter(|| {load_lpoints("res/IrisTrain2014.dt")});
-    }
-    
-    #[bench]
-    fn bench_knn(b: &mut Bencher) {
-        let train = load_lpoints("res/IrisTrain2014.dt")
-            .ok().expect("Error Loading training data");
-        let test = load_points("res/IrisTest2014.dt")
-            .ok().expect("Error Loading test data");
-        b.iter(|| {knn(&train, &test, 3)});
-    }
-
-    #[bench]
-    fn bench_kmeans(b: &mut Bencher) {
-        let test = load_points("res/IrisTest2014.dt")
-            .ok().expect("Error Loading test data");
-        b.iter(|| {kmeans(&test, 3)});
-    }
-}
-
