@@ -1,7 +1,7 @@
 use std::fs;
 use std::io;
-use std::str::Pattern;
 use std::io::BufRead;
+use std::str::pattern::Pattern;
 
 use fasta_string::FastaString;
 
@@ -28,14 +28,14 @@ impl Iterator for FastaIO {
             match self.file.next() {
                 Some(line_res) => {
                     match line_res {
-                        Ok(ref line) if '>'.is_prefix_of(line.as_slice()) => {
-                            let ret = Some(FastaString { description: String::from_str(self.next_line.as_slice().trim_left_matches('>')), 
+                        Ok(ref line) if '>'.is_prefix_of(line) => {
+                            let ret = Some(FastaString { description: String::from(self.next_line.as_str().trim_left_matches('>')),
                                                          sequence: seq });
                             self.next_line = line.clone();
                             return ret;
                         }
                         Ok(line) => {
-                            seq.push_str(line.as_slice());
+                            seq.push_str(&line);
                         }
                         Err(_) => return None
                     }
@@ -50,18 +50,13 @@ impl Iterator for FastaIO {
 mod tests {
     use std::fs;
     use super::FastaIO;
-	
+
     #[test]
     fn test_iteration() {
-        let mut file = fs::File::open("res/p3_clean_C-148-2-Caecum_S128_sorted.fa").unwrap();
-        let mut fasta = FastaIO::new( file );
-        for fastaString in fasta {
+        let file = fs::File::open("res/p3_clean_C-148-2-Caecum_S128_sorted.fa").unwrap();
+        let fasta = FastaIO::new( file );
+        for fasta_string in fasta {
             // println!("{:?}", fastaString)
         }
     }
 }
-
-
-
-
-

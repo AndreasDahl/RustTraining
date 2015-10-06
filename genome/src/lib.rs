@@ -1,4 +1,5 @@
-#![feature(std_misc)]
+#![feature(pattern)]
+#![feature(convert)]
 #![cfg_attr(test, feature(test))]
 
 pub mod clustering;

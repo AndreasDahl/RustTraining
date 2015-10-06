@@ -1,4 +1,3 @@
-use std::num::Float;
 
 pub fn generate_three_mer(input: &str) -> [usize; 64] {
     let mut kmer = [0; 64];
@@ -7,7 +6,7 @@ pub fn generate_three_mer(input: &str) -> [usize; 64] {
     let mut b = bytes[1] & 0b110;
     for i in 2..bytes.len() {
         let c = bytes[i] & 0b110;
-        
+
         let k_index : usize = ((a << 3) | (b << 1) | (c >> 1)) as usize;
         kmer[k_index] += 1;
 
