@@ -6,4 +6,7 @@ rust:
 matrix:
     allow_failures:
         - rust: nightly
-script: cd knn && cargo test --verbose
+evn:
+    - TEST_DIR=knn
+    - TEST_DIR=genome
+script: cd $TEST_DIR && cargo test --verbose
