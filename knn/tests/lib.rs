@@ -1,10 +1,6 @@
-#![feature(test)]
-
-extern crate test;
 extern crate knn;
 
 use knn::*;
-use test::Bencher;
 
 #[test]
 fn test_distace() {
@@ -47,41 +43,41 @@ fn test_zero_one_error() {
 }
 
 // Benchmarks
-
-#[bench]
-fn bench_highest_in_vec(b: &mut Bencher) {
-    let v = vec![0.5, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0];
-    b.iter(|| {highest_in_vec(&v)})
-}
-
-#[bench]
-fn bench_most_common(b: &mut Bencher) {
-    let v = vec!["a", "b", "c", "a", "b", "a"];
-    b.iter(|| {most_common(&v)});
-}
-
-#[bench]
-fn bench_load_points(b: &mut Bencher) {
-     b.iter(|| {load_points("res/IrisTrain2014.dt")});
-}
-
-#[bench]
-fn bench_load_lpoints(b: &mut Bencher) {
-     b.iter(|| {load_lpoints("res/IrisTrain2014.dt")});
-}
-
-#[bench]
-fn bench_knn(b: &mut Bencher) {
-    let train = load_lpoints("res/IrisTrain2014.dt")
-        .ok().expect("Error Loading training data");
-    let test = load_points("res/IrisTest2014.dt")
-        .ok().expect("Error Loading test data");
-    b.iter(|| {knn(&train, &test, 3)});
-}
-
-#[bench]
-fn bench_kmeans(b: &mut Bencher) {
-    let test = load_points("res/IrisTest2014.dt")
-        .ok().expect("Error Loading test data");
-    b.iter(|| {kmeans(&test, 3)});
-}
+//
+// #[bench]
+// fn bench_highest_in_vec(b: &mut Bencher) {
+//     let v = vec![0.5, 1.0, 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0];
+//     b.iter(|| {highest_in_vec(&v)})
+// }
+//
+// #[bench]
+// fn bench_most_common(b: &mut Bencher) {
+//     let v = vec!["a", "b", "c", "a", "b", "a"];
+//     b.iter(|| {most_common(&v)});
+// }
+//
+// #[bench]
+// fn bench_load_points(b: &mut Bencher) {
+//      b.iter(|| {load_points("res/IrisTrain2014.dt")});
+// }
+//
+// #[bench]
+// fn bench_load_lpoints(b: &mut Bencher) {
+//      b.iter(|| {load_lpoints("res/IrisTrain2014.dt")});
+// }
+//
+// #[bench]
+// fn bench_knn(b: &mut Bencher) {
+//     let train = load_lpoints("res/IrisTrain2014.dt")
+//         .ok().expect("Error Loading training data");
+//     let test = load_points("res/IrisTest2014.dt")
+//         .ok().expect("Error Loading test data");
+//     b.iter(|| {knn(&train, &test, 3)});
+// }
+//
+// #[bench]
+// fn bench_kmeans(b: &mut Bencher) {
+//     let test = load_points("res/IrisTest2014.dt")
+//         .ok().expect("Error Loading test data");
+//     b.iter(|| {kmeans(&test, 3)});
+// }
