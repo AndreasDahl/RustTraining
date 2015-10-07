@@ -42,23 +42,3 @@ pub fn seq_clust(input: &mut Iterator<Item = FastaString>, similarity: f32, outp
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    extern crate test;
-    use std::io;
-    use std::fs;
-
-    use fasta::FastaIO;
-    use super::seq_clust;
-
-    #[test]
-    fn test_seq_clust() {
-        let mut fasta = FastaIO::new(fs::File::open("res/p3_clean_C-148-2-Caecum_S128_sorted.fa").unwrap());
-
-        seq_clust(&mut fasta, 0.5, &mut io::sink());
-    }
-
-    // Benches ----
-
-}

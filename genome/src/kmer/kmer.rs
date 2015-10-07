@@ -32,9 +32,15 @@ mod tests {
 
     #[test]
     fn test_generate_three_mer() {
-        let dna = "aaacgtttggcagatcgcgtactgactactactgactgtacgtagtcgcgaacgtcga";
+        let dna1 = "aaaagaaa";
+        let dna2 = "aaagaaaa";
 
-        generate_three_mer(dna);
+        let kmers1 = generate_three_mer(dna1);
+        let kmers2 = generate_three_mer(dna2);
+
+        for i in 0..kmers1.len() {
+            assert_eq!(kmers1[i], kmers2[i]);
+        }
     }
 
     #[test]
