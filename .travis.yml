@@ -9,4 +9,5 @@ matrix:
 env:
     - TEST_DIR=knn
     - TEST_DIR=genome
+    - TEST_DIR=prod_cons
 script: cd $TEST_DIR && cargo test --verbose
