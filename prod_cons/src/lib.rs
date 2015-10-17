@@ -3,6 +3,7 @@ use std::collections::linked_list::LinkedList;
 use std::thread;
 use std::sync::RwLock;
 use std::sync::mpsc;
+use std::fmt::Display;
 
 pub trait Producer<T : Send + Sync + 'static, G: Send + 'static> {
     fn produce(T) -> G;
@@ -34,8 +35,8 @@ pub trait Producer<T : Send + Sync + 'static, G: Send + 'static> {
 
 pub struct EchoProducer;
 
-impl Producer<u32, u32> for EchoProducer {
-    fn produce(from : u32) -> u32 {
+impl <T : Display + Send + Sync + 'static>Producer<T, T> for EchoProducer {
+    fn produce(from : T) -> T {
         println!("Producing {}", from);
         from
     }
