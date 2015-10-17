@@ -1,9 +1,54 @@
+use std::sync::Arc;
+use std::collections::linked_list::LinkedList;
+use std::thread;
+use std::sync::RwLock;
+use std::sync::mpsc;
+
+pub trait Producer<T : Send + Sync + 'static, G: Send + 'static> {
+    fn produce(T) -> G;
+
+    fn start_producing(todo : Arc<RwLock<LinkedList<T>>>, sender : mpsc::Sender<G>)
+            -> () {
+        Self::start_producers(1, todo, sender);
+    }
+
+    fn start_producers(n : u32, todo : Arc<RwLock<LinkedList<T>>>, sender : mpsc::Sender<G>)
+            -> () {
+        for x in 0..n {
+            let name = format!("Producer {}", x);
+
+            let todo = todo.clone();
+            let sender = sender.clone();
+            thread::Builder::new().name(name).spawn(move || {
+                while !todo.read().unwrap().is_empty() {
+                    let mut list = todo.write().unwrap();
+                    let answer = Self::produce(list.pop_front().unwrap());
+                    sender.send(answer).unwrap();
+                }
+                println!("Producer done");
+            }).unwrap();  // TODO: Return result
+        }
+
+    }
+}
+
+pub struct EchoProducer;
+
+impl Producer<u32, u32> for EchoProducer {
+    fn produce(from : u32) -> u32 {
+        println!("Producing {}", from);
+        from
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-    use std::collections::linked_list::LinkedList;
-    use std::thread;
+    use super::{EchoProducer, Producer};
+
     use std::sync::RwLock;
+    use std::thread;
+    use std::collections::linked_list::LinkedList;
+    use std::sync::Arc;
     use std::sync::mpsc;
 
     #[test]
@@ -20,16 +65,7 @@ mod tests {
 
         let (tx, rx) = mpsc::channel();
 
-        let mu = data.clone();
-        let p = thread::Builder::new().name("Producer".to_string()).spawn(move || {
-            while !mu.read().unwrap().is_empty() {
-                let mut list = mu.write().unwrap();
-                let answer = list.pop_front().unwrap();
-                println!("Produced: {}", answer);
-                tx.send(answer).unwrap();
-            }
-            println!("Producer done");
-        }).unwrap();
+        EchoProducer::start_producing(data, tx);
 
         let c = thread::Builder::new().name("Consumer".to_string()).spawn(move || {
             while let Ok(n) = rx.recv() {
@@ -38,7 +74,6 @@ mod tests {
 
         }).unwrap();
 
-        p.join().unwrap();
         c.join().unwrap();
     }
 }
