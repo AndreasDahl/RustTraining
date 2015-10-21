@@ -7,27 +7,34 @@ use std::fmt::Display;
 pub trait Producer<T : Send + Sync + 'static, G: Send + 'static> {
     fn produce(T) -> G;
 
-    fn start_producing<I : Iterator<Item = T> + Send + Sync + 'static>(todo : Arc<RwLock<I>>, sender : mpsc::Sender<G>)
-            -> () {
-        Self::start_producers(1, todo, sender);
+    fn start_producing<I : Iterator<Item = T> + Send + Sync + 'static>(todo : I)
+            -> std::io::Result<mpsc::Receiver<G>> {
+        Self::start_producers(1, todo)
     }
 
-    fn start_producers<I : Iterator<Item = T> + Send + Sync + 'static>(n : u32, todo : Arc<RwLock<I>>, sender : mpsc::Sender<G>)
-            -> () {
+    fn start_producers<I : Iterator<Item = T> + Send + Sync + 'static>(n : u32, iter : I)
+            -> std::io::Result<mpsc::Receiver<G>> {
+        let todo = Arc::new(RwLock::new(iter));
+        let (sender, receiver) = mpsc::channel();
+
         for x in 0..n {
             let name = format!("Producer {}", x);
 
             let todo = todo.clone();
             let sender = sender.clone();
-            thread::Builder::new().name(name).spawn(move || {
+            let thread_result = thread::Builder::new().name(name).spawn(move || {
                 while let Some(next) = todo.write().unwrap().next() {
                     let answer = Self::produce(next);
                     sender.send(answer).unwrap();
                 }
-                println!("Producer done");
-            }).unwrap();  // TODO: Return handle
+                println!("{} done", thread::current().name().unwrap());
+            });
+            if let Err(e) = thread_result {
+                return Err(e);
+            }
         }
 
+        Ok(receiver)
     }
 }
 
@@ -35,7 +42,7 @@ pub struct EchoProducer;
 
 impl <T : Display + Send + Sync + 'static>Producer<T, T> for EchoProducer {
     fn produce(from : T) -> T {
-        println!("Producing {}", from);
+        println!("{}: {}", thread::current().name().unwrap(), from);
         from
     }
 }
@@ -44,38 +51,19 @@ impl <T : Display + Send + Sync + 'static>Producer<T, T> for EchoProducer {
 mod tests {
     use super::{EchoProducer, Producer};
 
-    use std::sync::RwLock;
-    use std::thread;
-    use std::collections::linked_list::LinkedList;
-    use std::sync::Arc;
-    use std::sync::mpsc;
     use std::iter::IntoIterator;
 
     #[test]
     fn it_works() {
-        let mut work = LinkedList::new();
+        let work = vec![1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];
+        let expected = work.clone();
 
-        work.push_back(0);
-        work.push_back(1);
-        work.push_back(2);
-        work.push_back(3);
-        work.push_back(4);
+        let rx = EchoProducer::start_producers(2, work.into_iter()).unwrap();
 
-        let work_iter = work.into_iter();
-
-        let data = Arc::new(RwLock::new(work_iter));
-
-        let (tx, rx) = mpsc::channel();
-
-        EchoProducer::start_producing(data, tx);
-
-        let c = thread::Builder::new().name("Consumer".to_string()).spawn(move || {
-            while let Ok(n) = rx.recv() {
-                println!("Receviced: {}", n)
-            };
-
-        }).unwrap();
-
-        c.join().unwrap();
+        let mut i = 0;
+        while let Ok(n) = rx.recv() {
+            assert_eq!(expected[i], n);
+            i += 1;
+        };
     }
 }
