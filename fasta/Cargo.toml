@@ -1,0 +1,4 @@
+[package]
+name = "fasta"
+version = "0.1.0"
+authors = ["Andreas Dahl <andreas@hrdahl.dk>"]

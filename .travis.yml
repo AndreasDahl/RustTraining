@@ -10,4 +10,5 @@ env:
     - TEST_DIR=knn
     - TEST_DIR=genome
     - TEST_DIR=prod_cons
+    - TEST_DIR=fasta
 script: cd $TEST_DIR && cargo test --verbose
