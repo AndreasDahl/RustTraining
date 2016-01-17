@@ -48,8 +48,10 @@ pub trait Producer<T : Send + Sync + 'static, G: Send + 'static> {
 mod tests {
     use super::Producer;
 
+    use std::collections::HashSet;
     use std::fmt::Display;
     use std::iter::{IntoIterator, FromIterator};
+    use std::thread;
 
     struct EchoProducer;
 
@@ -62,16 +64,14 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let work = Vec::from_iter(1..1000);
+        let work = HashSet::<i32>::from_iter(1..100);
 
         let expected = work.clone();
 
         let rx = EchoProducer::start_producers(2, work.into_iter()).unwrap();
 
-        let mut i = 0;
         while let Ok(n) = rx.recv() {
-            assert_eq!(expected[i], n);
-            i += 1;
+            assert!(expected.contains(&n))
         };
     }
 }
