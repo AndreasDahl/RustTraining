@@ -1,7 +1,0 @@
-[package]
-name = "nn"
-version = "0.1.0"
-authors = ["Andreas Dahl <andreas@hrdahl.dk>"]
-
-[dependencies]
-leaf = "0.2.1"
